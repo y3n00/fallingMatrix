@@ -6,13 +6,14 @@
 #include <string>
 #include <thread>
 
+#define RANDOM_TEMPLATES
 #include "Random.hpp"
 #include "Screen.hpp"
 #include "cliColors.hpp"
 using namespace cliColors;
 using namespace nlohmann;
 #define saveVal(val) mainJson[#val] = val;
-#define loadVal(val) val = mainJson[#val].get<decltype(val)>();
+#define loadVal(val) mainJson[#val].get_to(val);
 
 class Matrix {
    private:
@@ -41,15 +42,15 @@ class Matrix {
         std::stringstream sstr;
         static const uint16_t size = Screen::getSize().ws_col;
         for (size_t w = 0; w < size; ++w) {
-            const bool isSpace = !Random::getRand(0, 2);  // if rand returns 0 isSpace = true
+            const bool isSpace = !Random<uint8_t>::getRand(0, 2);  // if rand returns 0 isSpace = true
             if (isSpace) {
                 sstr << ' ';
                 continue;
             }
-            const char symbol = static_cast<const char>(Random::getRand('!', '}'));
+            const char symbol = Random<char>::getRand('!', '}');
             auto color = cfg.color;
             if (color == _default)
-                color = static_cast<Colors>(Random::getRand(red, white));
+                color = static_cast<Colors>(Random<uint8_t>::getRand(red, white));
             sstr << ColorTxt::GetColor(color) << symbol;
         }
         return sstr.str();
