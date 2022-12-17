@@ -24,12 +24,12 @@ enum Colors : uint8_t {
 
 class ColorTxt {
    public:
-    static inline const std::string Colorize(const std::string& str, Colors c) {
-        return m_colors[c] + str + m_colors[reset];
+    static inline const auto Colorize(const std::string& str, Colors c) {
+        return m_colors.at(c) + str + m_colors.at(reset);
     }
 
-    static inline const std::string GetColor(Colors color) { return m_colors[color]; }
-    static inline const std::string Reset() { return m_colors[reset]; }
+    static inline const auto GetColor(Colors color) { return m_colors[color]; }
+    static inline const auto Reset() { return m_colors.at(reset); }
 
    private:
     static const std::array<const char*, 16> m_colors;

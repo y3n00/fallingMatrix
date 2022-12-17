@@ -1,5 +1,5 @@
 #include "Matrix.hpp"
 
 int main() {
-    Matrix{}.run();
+    Matrix::run();
 }

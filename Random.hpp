@@ -11,15 +11,15 @@ class Random {
     Random(const Random&) = delete;
     Random& operator=(const Random&) = delete;
 
-    static int64_t getRand() {
+    [[nodiscard]] static int64_t getRand() {
         return std::uniform_int_distribution()(gen);
     }
 
-    static int64_t getRand(uint64_t maxN) {
+    [[nodiscard]] static int64_t getRand(uint64_t maxN) {
         return std::uniform_int_distribution(uint64_t(0), maxN)(gen);
     }
 
-    static int64_t getRand(int64_t minN, int64_t maxN) {
+    [[nodiscard]] static int64_t getRand(int64_t minN, int64_t maxN) {
         return std::uniform_int_distribution(minN, maxN)(gen);
     }
 };

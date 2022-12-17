@@ -1,32 +1,54 @@
 #pragma once
+#include <fstream>
 #include <iostream>
+#include <nlohmann/json.hpp>
 #include <sstream>
 #include <string>
 #include <thread>
 
-#include "Config.hpp"
 #include "Random.hpp"
 #include "Screen.hpp"
-#include "Timer.hpp"
 #include "cliColors.hpp"
 using namespace cliColors;
+using namespace nlohmann;
+#define saveVal(val) mainJson[#val] = val;
+#define loadVal(val) val = mainJson[#val].get<decltype(val)>();
 
 class Matrix {
    private:
-    static Config config;
-    static const Config::cfg_t* cfg;
+    static struct Config {
+        static const std::string filename;
+        static size_t deltaTime;
+        static json mainJson;
+        static cliColors::Colors color;
+        static void init() {
+            std::filesystem::exists(filename) ? load() : save();
+        }
+        static void save() {
+            saveVal(deltaTime);
+            saveVal(color);
+            std::ofstream(filename) << mainJson;
+        }
+        static void load() {
+            std::ifstream(filename) >> mainJson;
+            loadVal(deltaTime);
+            loadVal(color);
+        }
+    } cfg;
 
-    static std::string generateStr() {
+    [[nodiscard]] static std::string
+    generateStr() {
         std::stringstream sstr;
         static const uint16_t size = Screen::getSize().ws_col;
         for (size_t w = 0; w < size; ++w) {
-            if (bool isSpace = Random::getRand(0, 3); !isSpace) {
+            const bool isSpace = !Random::getRand(0, 2);  // if rand returns 0 isSpace = true
+            if (isSpace) {
                 sstr << ' ';
                 continue;
             }
-            const auto symbol = static_cast<char>(Random::getRand('!', '}'));
-            auto color = cfg->color;
-            if (cfg->color == _default)
+            const char symbol = static_cast<const char>(Random::getRand('!', '}'));
+            auto color = cfg.color;
+            if (color == _default)
                 color = static_cast<Colors>(Random::getRand(red, white));
             sstr << ColorTxt::GetColor(color) << symbol;
         }
@@ -34,19 +56,21 @@ class Matrix {
     }
 
    public:
-    void run() {
+    static void run() {
+        Config::init();
         Screen::init(Matrix::generateStr);
 
         while (true) {
             if (system("clear") != 0)
                 return;
-
             Screen::update();
             Screen::draw();
-            std::this_thread::sleep_for(Timer::ms(cfg->deltaTime));
+            std::this_thread::sleep_for(std::chrono::milliseconds(cfg.deltaTime));
         }
     }
 };
 
-Config Matrix::config;
-const Config::cfg_t* Matrix::cfg = Matrix::config.get();
+const std::string Matrix::Config::filename = "matrixcfg.json";
+json Matrix::Config::mainJson{};
+size_t Matrix::Config::deltaTime{200};
+cliColors::Colors Matrix::Config::color{_default};
