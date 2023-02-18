@@ -37,29 +37,26 @@ class Matrix {
         }
     } cfg;
 
-    [[nodiscard]] static std::string
-    generateStr() {
-        std::stringstream sstr;
-        static const uint16_t size = Screen::getSize().ws_col;
-        for (size_t w = 0; w < size; ++w) {
-            const bool isSpace = !Random<uint8_t>::getRand(0, 2);  // if rand returns 0 isSpace = true
-            if (isSpace) {
-                sstr << ' ';
-                continue;
-            }
-            const char symbol = Random<char>::getRand('!', '}');
-            auto color = cfg.color;
-            if (color == _default)
-                color = static_cast<Colors>(Random<uint8_t>::getRand(red, white));
-            sstr << ColorTxt::GetColor(color) << symbol;
-        }
-        return sstr.str();
-    }
-
    public:
     static void run() {
         Config::init();
-        Screen::init(Matrix::generateStr);
+        Screen::init([] -> std::string {
+            std::stringstream sstr;
+            static const uint16_t size = Screen::getSize().ws_col;
+            for (size_t w = 0; w < size; ++w) {
+                const bool isSpace = !Random<uint8_t>::getRand(0, 2);  // if rand returns 0, isSpace becomes true
+                if (isSpace) {
+                    sstr << ' ';
+                    continue;
+                }
+                const char symbol = Random<char>::getRand('!', '}');
+                auto color = cfg.color;
+                if (color == _default)
+                    color = static_cast<Colors>(Random<uint8_t>::getRand(red, white));
+                sstr << ColorTxt::GetColor(color) << symbol;
+            }
+            return sstr.str();
+        });
 
         while (true) {
             if (system("clear") != 0)
